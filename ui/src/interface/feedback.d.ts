@@ -4,7 +4,7 @@ export interface IHighlight {
   summary: string;
 }
 
-export interface Feedback {
+export interface IFeedback {
   id: number;
   text: string;
   highlights?: IHighlight[];
