@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 
 import { createFeedbackMutation } from '@/feedback/api';
+import { ERROR_MESSAGES } from '@/constants/errorMessage';
 
 interface IFeedbackFromProps {
   onClose: () => void;
@@ -20,6 +21,8 @@ interface IFeedbackField {
 }
 
 const AddFeedbackForm: React.FC<IFeedbackFromProps> = ({ onClose, onSuccess }) => {
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
   const form = useForm<IFeedbackFormData>({
     defaultValues: { feedbacks: [{ text: '' }] },
   });
@@ -42,8 +45,11 @@ const AddFeedbackForm: React.FC<IFeedbackFromProps> = ({ onClose, onSuccess }) =
       const validFeedbacks: { text: string }[] = data.feedbacks.filter((f: { text: string }) =>
         f.text.trim(),
       );
-      if (validFeedbacks.length === 0) return;
-
+      if (validFeedbacks.length === 0) {
+        setErrorMessage(ERROR_MESSAGES.EMPTY_FEEDBACK);
+        return;
+      }
+      setErrorMessage(null);
       await Promise.all(
         validFeedbacks.map((f: { text: string }) => createFeedbackMutation(f.text)),
       );
@@ -89,7 +95,7 @@ const AddFeedbackForm: React.FC<IFeedbackFromProps> = ({ onClose, onSuccess }) =
           <button type="button" className="btn-dashed" onClick={() => append({ text: '' })}>
             + Add More Feedback
           </button>
-
+          {errorMessage && <p className="text-red-500">{errorMessage}</p>}
           <button
             type="submit"
             className="btn-primary w-full mt-6"

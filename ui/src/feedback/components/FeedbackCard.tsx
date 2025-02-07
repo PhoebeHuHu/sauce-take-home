@@ -27,13 +27,18 @@ const FeedbackCard: React.FC<IFeedbackCardProps> = ({ feedback }) => {
       </button>
       {isFeedbacksOpen && (
         <div>
-          {feedback.highlights &&
+          {feedback.highlights && feedback.highlights.length > 0 ? (
             feedback.highlights.map((highlight) => (
               <div key={highlight.id} className="pl-3 border-l-2 border-green-500 mt-2">
                 <p className="text-green-300">{highlight.quote}</p>
                 <p className="text-gray-400">{highlight.summary}</p>
               </div>
-            ))}
+            ))
+          ) : (
+            <div className="pl-3 border-l-2 border-gray-500 mt-2">
+              <p className="text-gray-500 italic pl-3 mt-2">No highlights available.</p>
+            </div>
+          )}
         </div>
       )}
     </div>
