@@ -1,8 +1,28 @@
-import {zodToJsonSchema} from "zod-to-json-schema";
-import openAIClient from "./client";
-import {v4} from "uuid";
-import {HighlightPromptResult, highlightPromptResultSchema} from "./models";
+import { v4 } from 'uuid';
+import { zodToJsonSchema } from 'zod-to-json-schema';
 
+import { PROMPT_CONSTANTS, PROMPT_INSTRUCTIONS } from '@/constants/prompt';
+
+import openAIClient from './client';
+import { HighlightPromptResult, highlightPromptResultSchema } from './models';
+
+/**
+ * Prompt Constants and Templates
+ *
+ * NOTE: In production environments, these prompts would typically be stored in a
+ * CMS (Content Management System) or database for easier management and updates.
+ * For local development without cloud infrastructure, I just storing them
+ * directly in the codebase as constants.
+ *
+ */
+const createPrompt = (feedback: string): string => {
+  return [
+    ...PROMPT_INSTRUCTIONS,
+    JSON.stringify(zodToJsonSchema(highlightPromptResultSchema)),
+    'The feedback to analyze:',
+    feedback,
+  ].join('\n');
+};
 
 /**
  * This function takes in a feedback string and returns the highlights of the feedback.
@@ -12,25 +32,15 @@ import {HighlightPromptResult, highlightPromptResultSchema} from "./models";
  * - The quote from the source feedback.
  * - A condensed summary of the quote.
  *
+ * TODO: interface!
+ *
  * @param feedback The feedback to analyze
  */
 const runFeedbackAnalysis = async (feedback: string): Promise<HighlightPromptResult> => {
   const promptId = v4();
 
   // Send OpenAI completion request and return the highlights
-  const prompt =
-    "Analyze the feedback and return a list of highlights within the feedback if any exist." +
-    "A highlight should be an issue or feature request from the given feedback." +
-    "\n" +
-    "You are only allowed to speak in raw JSON. Do not wrap the response in markdown." +
-    "\n" +
-    "The result should have the following shape:" +
-    "\n" +
-    `${JSON.stringify(zodToJsonSchema(highlightPromptResultSchema))}` +
-    "\n" +
-    "The feedback to analyze:" +
-    "\n" +
-    feedback;
+  const prompt = createPrompt(feedback);
 
   console.log();
   console.log(`+++++++ FEEDBACK ANALYSIS START ID (${promptId}) +++++++`);
@@ -39,21 +49,24 @@ const runFeedbackAnalysis = async (feedback: string): Promise<HighlightPromptRes
   console.log();
 
   const response = await openAIClient.chat.completions.create({
-    model: "gpt-4-turbo-preview",
-    messages: [{
-      role: "user",
-      content: prompt
-    }],
+    // better to keep the model info in .env, so we dont need to do a CI/CD when change model
+    model: PROMPT_CONSTANTS.MODEL,
+    messages: [
+      {
+        role: 'user',
+        content: prompt,
+      },
+    ],
   });
   if (!response.choices[0].message.content) {
-    throw new Error("OpenAI did not return a message.");
+    throw new Error(PROMPT_CONSTANTS.ERRORS.NO_MESSAGE);
   }
 
   const parsed = highlightPromptResultSchema.safeParse(
-    JSON.parse(response.choices[0].message.content)
+    JSON.parse(response.choices[0].message.content),
   );
   if (!parsed.success) {
-    throw new Error("Failed to parse OpenAI response.");
+    throw new Error(PROMPT_CONSTANTS.ERRORS.PARSE_FAILED);
   }
 
   console.log();
@@ -63,8 +76,8 @@ const runFeedbackAnalysis = async (feedback: string): Promise<HighlightPromptRes
   console.log();
 
   return parsed.data;
-}
+};
 
 export default {
   runFeedbackAnalysis,
-}
+};

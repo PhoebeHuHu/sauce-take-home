@@ -21,6 +21,7 @@ const feedbacksDocument = gql`
 
 type FeedbacksData = { feedbacks: { values: IFeedback[]; count: number } };
 export const feedbacksQuery = (page: number, per_page: number): Promise<FeedbacksData> =>
+  // Here should be a BASE_URL
   request('http://localhost:4000/graphql', feedbacksDocument, {
     page,
     per_page,

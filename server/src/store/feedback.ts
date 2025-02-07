@@ -1,4 +1,8 @@
-import db from "./db";
+import { z } from 'zod';
+
+import db from '@/store/db';
+import { Feedback, Highlight } from '@/types/model';
+import { feedbackSchema, highlightSchema } from '@/valicators/zodSchema';
 
 type CreateHighlightArgs = {
   feedbackId: number | bigint;
@@ -10,44 +14,45 @@ type CreateHighlightArgs = {
  * Gets a feedback entry by its id
  * @param id The id of the feedback
  */
-const getFeedback = async (id: number) => {
-  return db
-    .prepare(
-      `SELECT *
-                     FROM Feedback
-                     WHERE id = ?`
-    )
-    .get(id);
+const getFeedback = async (id: number): Promise<Feedback | undefined> => {
+  const result = db.prepare(`SELECT id, text FROM Feedback WHERE id = ?`).get(id) as
+    | Feedback
+    | undefined;
+
+  return result;
 };
 
 /**
- * Gets a page of feedback entries
+ * Gets a page of feedback entries, filter the wrong structure data
  * @param page The page number
  * @param perPage The number of entries per page
  */
-const getFeedbackPage = async (page: number, perPage: number) => {
-  return db
+
+const getFeedbackPage = async (page: number, perPage: number): Promise<Feedback[]> => {
+  const result = db
     .prepare(
       `SELECT *
                      FROM Feedback
                      ORDER BY id DESC
-                     LIMIT ? OFFSET ?`
+                     LIMIT ? OFFSET ?`,
     )
     .all(perPage, (page - 1) * perPage);
+  return z.array(feedbackSchema).parse(result);
 };
 
 /**
  * Gets the highlights of a feedback entry
  * @param feedbackId The id of the feedback
  */
-const getFeedbackHighlights = async (feedbackId: number) => {
-  return db
+const getFeedbackHighlights = async (feedbackId: number): Promise<Highlight[]> => {
+  const results = db
     .prepare(
       `SELECT *
                      FROM Highlight
-                     WHERE feedbackId = ?`
+                     WHERE feedbackId = ?`,
     )
     .all(feedbackId);
+  return z.array(highlightSchema).parse(results);
 };
 
 /**
@@ -67,28 +72,35 @@ const countFeedback = (): number => {
  * Creates a new feedback entry
  * @param text The text of the feedback
  */
-const createFeedback = async (text: string) => {
+const createFeedback = async (text: string): Promise<Feedback> => {
   const result = db
     .prepare(
       `INSERT INTO Feedback (text)
-                             VALUES (?)`
+                             VALUES (?)`,
     )
     .run(text);
-  return { id: result.lastInsertRowid, text };
+  return { id: Number(result.lastInsertRowid), text };
 };
 
 /**
  * Creates a new highlight entry
  * @param args The arguments to create a highlight
  */
-const createHighlight = async (args: CreateHighlightArgs) => {
+const createHighlight = async (args: CreateHighlightArgs): Promise<Highlight> => {
   const result = db
     .prepare(
       `INSERT INTO Highlight (quote, summary, feedbackId)
-                             VALUES (?, ?, ?)`
+                             VALUES (?, ?, ?)`,
     )
-    .run(args.highlightSummary, args.highlightQuote, args.feedbackId);
-  return { id: result.lastInsertRowid, ...result };
+    .run(args.feedbackId, args.highlightSummary, args.highlightQuote);
+
+  const highlight: Highlight = {
+    id: Number(result.lastInsertRowid),
+    feedbackId: Number(args.feedbackId),
+    summary: args.highlightSummary,
+    quote: args.highlightQuote,
+  };
+  return highlight;
 };
 
 export default {

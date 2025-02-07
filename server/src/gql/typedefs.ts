@@ -6,7 +6,7 @@ const typeDefs = /* GraphQL */ `
     feedback(id: Int!): Feedback
     feedbacks(page: Int!, per_page: Int!): FeedbackPage!
   }
-  
+
   type Mutation {
     createFeedback(text: String!): Feedback!
   }

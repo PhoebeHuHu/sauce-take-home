@@ -1,11 +1,12 @@
-import feedbackStore from "../store/feedback";
-import prompt from "../ai/prompt";
+import prompt from '@/ai/prompt';
+import feedbackStore from '@/store/feedback';
+import { Feedback } from '@/types/model';
 
 /**
  * Creates a feedback entry and runs analysis on it.
  * @param text The feedback to create
  */
-const createFeedback = async (text: string) => {
+const createFeedback = async (text: string): Promise<Feedback> => {
   const feedback = await feedbackStore.createFeedback(text);
   try {
     const analysisResult = await prompt.runFeedbackAnalysis(feedback.text);
@@ -19,7 +20,7 @@ const createFeedback = async (text: string) => {
     }
     return feedback;
   } catch (error) {
-    console.error("Error analyzing feedback:", error);
+    console.error('Error analyzing feedback:', error);
     return feedback;
   }
 };
@@ -29,8 +30,11 @@ const createFeedback = async (text: string) => {
  * @param page The page number
  * @param perPage The number of entries per page
  */
-const getFeedbackPage = async (page: number, perPage: number) => {
-  const values = await feedbackStore.getFeedbackPage(page, perPage);
+const getFeedbackPage = async (
+  page: number,
+  perPage: number,
+): Promise<{ values: Feedback[]; count: number }> => {
+  const values: Feedback[] = await feedbackStore.getFeedbackPage(page, perPage);
   const count = feedbackStore.countFeedback();
   return { values, count };
 };
