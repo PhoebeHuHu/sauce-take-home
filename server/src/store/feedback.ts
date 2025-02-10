@@ -92,7 +92,7 @@ const createHighlight = async (args: CreateHighlightArgs): Promise<Highlight> =>
       `INSERT INTO Highlight (quote, summary, feedbackId)
                              VALUES (?, ?, ?)`,
     )
-    .run(args.feedbackId, args.highlightSummary, args.highlightQuote);
+    .run(args.highlightQuote, args.highlightSummary, args.feedbackId);
 
   const highlight: Highlight = {
     id: Number(result.lastInsertRowid),
