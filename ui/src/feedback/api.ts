@@ -19,10 +19,7 @@ const GET_FEEDBACK_PAGE = gql`
   }
 `;
 
-export const getFeedbackPageQuery = (
-  page: number,
-  per_page: number
-): Promise<IFeedbackPageData> =>
+export const getFeedbackPageQuery = (page: number, per_page: number): Promise<IFeedbackPageData> =>
   request('http://localhost:4000/graphql', GET_FEEDBACK_PAGE, {
     page,
     per_page,
@@ -42,7 +39,5 @@ const CREATE_FEEDBACK = gql`
   }
 `;
 
-export const createFeedbackMutation = (
-  text: string
-): Promise<{ createFeedback: IFeedback }> =>
+export const createFeedbackMutation = (text: string): Promise<{ createFeedback: IFeedback }> =>
   request('http://localhost:4000/graphql', CREATE_FEEDBACK, { text });
