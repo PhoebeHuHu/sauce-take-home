@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 
-import { createFeedbackMutation } from '@/feedback/api';
 import { ERROR_MESSAGES } from '@/constants/errorMessage';
+import { createFeedbackMutation } from '@/feedback/api';
 
 interface IFeedbackFromProps {
   onClose: () => void;
@@ -20,7 +20,10 @@ interface IFeedbackField {
   text: string;
 }
 
-const AddFeedbackForm: React.FC<IFeedbackFromProps> = ({ onClose, onSuccess }) => {
+const AddFeedbackForm: React.FC<IFeedbackFromProps> = ({
+  onClose,
+  onSuccess,
+}) => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const form = useForm<IFeedbackFormData>({
@@ -42,8 +45,8 @@ const AddFeedbackForm: React.FC<IFeedbackFromProps> = ({ onClose, onSuccess }) =
 
   const onSubmit = async (data: IFeedbackFormData): Promise<void> => {
     try {
-      const validFeedbacks: { text: string }[] = data.feedbacks.filter((f: { text: string }) =>
-        f.text.trim(),
+      const validFeedbacks: { text: string }[] = data.feedbacks.filter(
+        (f: { text: string }) => f.text.trim()
       );
       if (validFeedbacks.length === 0) {
         setErrorMessage(ERROR_MESSAGES.EMPTY_FEEDBACK);
@@ -51,7 +54,9 @@ const AddFeedbackForm: React.FC<IFeedbackFromProps> = ({ onClose, onSuccess }) =
       }
       setErrorMessage(null);
       await Promise.all(
-        validFeedbacks.map((f: { text: string }) => createFeedbackMutation(f.text)),
+        validFeedbacks.map((f: { text: string }) =>
+          createFeedbackMutation(f.text)
+        )
       );
       form.reset();
       onClose();
@@ -77,7 +82,11 @@ const AddFeedbackForm: React.FC<IFeedbackFromProps> = ({ onClose, onSuccess }) =
                 <div className="flex justify-between">
                   <label className="text-gray-500">Feedback {index + 1}</label>
                   {fields.length > 1 && (
-                    <button className="btn-outline-sm" onClick={() => remove(index)} type="button">
+                    <button
+                      className="btn-outline-sm"
+                      onClick={() => remove(index)}
+                      type="button"
+                    >
                       Remove
                     </button>
                   )}
@@ -92,7 +101,11 @@ const AddFeedbackForm: React.FC<IFeedbackFromProps> = ({ onClose, onSuccess }) =
               </div>
             ))}
           </div>
-          <button type="button" className="btn-dashed" onClick={() => append({ text: '' })}>
+          <button
+            type="button"
+            className="btn-dashed"
+            onClick={() => append({ text: '' })}
+          >
             + Add More Feedback
           </button>
           {errorMessage && <p className="text-red-500">{errorMessage}</p>}

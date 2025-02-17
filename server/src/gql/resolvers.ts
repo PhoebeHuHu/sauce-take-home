@@ -13,14 +13,17 @@ const resolvers = {
     /**
      * Retrieves a single feedback entry by ID.
      */
-    feedback: (parent: unknown, args: { id: number }) => {
+    getFeedbackById: (parent: unknown, args: { id: number }) => {
       return feedbackStore.getFeedback(args.id);
     },
 
     /**
      * Retrieves a paginated list of feedback entries.
      */
-    feedbacks: (parent: unknown, args: { page: number; per_page: number }) => {
+    getFeedbackPage: (
+      parent: unknown,
+      args: { page: number; per_page: number }
+    ) => {
       return feeedbackService.getFeedbackPage(args.page, args.per_page);
     },
   },

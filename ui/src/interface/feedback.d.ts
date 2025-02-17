@@ -9,3 +9,10 @@ export interface IFeedback {
   text: string;
   highlights?: IHighlight[];
 }
+
+export interface IFeedbackPageData {
+  getFeedbackPage: {
+    values: IFeedback[];
+    count: number;
+  };
+}

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import { feedbacksQuery } from '@/feedback/api.ts';
+import { getFeedbackPageQuery } from '@/feedback/api.ts';
 import type { IFeedback } from '@/interface/feedback.js';
 
 import AddFeedbackForm from './components/AddFeedbackForm.tsx';
@@ -16,11 +16,15 @@ export default function FeedbackList(): JSX.Element {
 
   const fetchFeedbacks = useCallback(() => {
     setLoading(true);
-    feedbacksQuery(page, PER_PAGE)
-      .then((result: { feedbacks: { values: IFeedback[]; count: number } }) => {
-        setFeedbacks(result.feedbacks.values);
-        setTotalCount(result.feedbacks.count);
-      })
+    getFeedbackPageQuery(page, PER_PAGE)
+      .then(
+        (result: {
+          getFeedbackPage: { values: IFeedback[]; count: number };
+        }) => {
+          setFeedbacks(result.getFeedbackPage.values);
+          setTotalCount(result.getFeedbackPage.count);
+        }
+      )
       .catch((error: Error) => {
         console.error('Error:', error);
       })
@@ -38,7 +42,10 @@ export default function FeedbackList(): JSX.Element {
       <div className="flex justify-between">
         <h1 className="text-2xl font-semibold">Feedback</h1>
         <p>Total Feedbacks: {totalCount}</p>
-        <button onClick={() => setIsFeedbackFormOpen(true)} className="btn-primary">
+        <button
+          onClick={() => setIsFeedbackFormOpen(true)}
+          className="btn-primary"
+        >
           Add Feedback
         </button>
       </div>
@@ -74,7 +81,9 @@ export default function FeedbackList(): JSX.Element {
 
             <button
               className="btn-outline"
-              onClick={() => setPage((p: number) => Math.min(totalPages, p + 1))}
+              onClick={() =>
+                setPage((p: number) => Math.min(totalPages, p + 1))
+              }
               disabled={page === totalPages}
             >
               Next
